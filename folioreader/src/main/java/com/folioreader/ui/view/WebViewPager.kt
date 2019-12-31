@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.webkit.JavascriptInterface
+import android.widget.TextView
 import androidx.core.view.GestureDetectorCompat
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
@@ -88,6 +89,11 @@ class WebViewPager : ViewPager {
 
         if (folioWebView == null)
             folioWebView = (parent as View).findViewById(R.id.folioWebView)
+    }
+
+    fun getHorizontalPageCount() : Int
+    {
+        return this.horizontalPageCount
     }
 
     @JavascriptInterface
@@ -185,14 +191,14 @@ class WebViewPager : ViewPager {
 
             // Debug code
             // Set alpha for folioWebView in folio_page_fragment.xml to 0.5 also.
-            /*if (position % 2 == 0) {
+          /*  if (position % 2 == 0) {
                 view.setBackgroundResource(R.drawable.green_border_background)
             } else {
                 view.setBackgroundResource(R.drawable.blue_border_background)
             }
-
+*/
             val textView = view.findViewById<TextView>(R.id.textView)
-            textView.text = Integer.toString(position)*/
+            textView.text = Integer.toString(position) + "/" + horizontalPageCount;
 
             container.addView(view)
             return view

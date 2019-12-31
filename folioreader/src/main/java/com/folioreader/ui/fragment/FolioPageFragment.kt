@@ -18,6 +18,7 @@ import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.webkit.*
 import android.widget.FrameLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -37,10 +38,7 @@ import com.folioreader.ui.activity.FolioActivityCallback
 import com.folioreader.ui.base.HtmlTask
 import com.folioreader.ui.base.HtmlTaskCallback
 import com.folioreader.ui.base.HtmlUtil
-import com.folioreader.ui.view.FolioWebView
-import com.folioreader.ui.view.LoadingView
-import com.folioreader.ui.view.VerticalSeekbar
-import com.folioreader.ui.view.WebViewPager
+import com.folioreader.ui.view.*
 import com.folioreader.util.AppUtil
 import com.folioreader.util.HighlightUtil
 import com.folioreader.util.UiUtil
@@ -111,6 +109,8 @@ class FolioPageFragment : Fragment(),
     private var spineIndex = -1
     private var mBookTitle: String? = null
     private var mIsPageReloaded: Boolean = false
+
+    private var mIsTrackingSeekBarTouch: Boolean = false
 
     private var highlightStyle: String? = null
 
@@ -368,7 +368,7 @@ class FolioPageFragment : Fragment(),
         }
 
         mWebview!!.settings.javaScriptEnabled = true
-        mWebview!!.isVerticalScrollBarEnabled = false
+        mWebview!!.isVerticalScrollBarEnabled = true
         mWebview!!.settings.allowFileAccess = true
 
         mWebview!!.isHorizontalScrollBarEnabled = false
@@ -636,10 +636,10 @@ class FolioPageFragment : Fragment(),
     }
 
     private fun setupScrollBar() {
-        UiUtil.setColorIntToDrawable(mConfig!!.themeColor, mScrollSeekbar!!.progressDrawable)
-        val thumbDrawable = ContextCompat.getDrawable(activity!!, R.drawable.icons_sroll)
-        UiUtil.setColorIntToDrawable(mConfig!!.themeColor, thumbDrawable!!)
-        mScrollSeekbar!!.thumb = thumbDrawable
+       // UiUtil.setColorIntToDrawable(mConfig!!.themeColor, mScrollSeekbar!!.progressDrawable)
+        // val thumbDrawable = ContextCompat.getDrawable(activity!!, R.drawable.icons_sroll)
+       //UiUtil.setColorIntToDrawable(mConfig!!.themeColor, thumbDrawable!!)
+        // mScrollSeekbar!!.thumb = thumbDrawable
     }
 
     private fun initSeekbar() {
@@ -650,6 +650,21 @@ class FolioPageFragment : Fragment(),
                     .getColor(R.color.default_theme_accent_color),
                 PorterDuff.Mode.SRC_IN
             )
+
+        val seekbar = mScrollSeekbar as VerticalSeekbar
+        mScrollSeekbar!!.setSeekListener(object : ISeekListener {
+            override fun OnSeek(progress: Double) {
+
+                if (mWebview != null)
+                {
+                    val toScrollY = progress * mWebview!!.contentHeightVal
+                    mWebview!!.scrollTo(mWebview!!.scrollX, toScrollY.toInt())
+                    val totalPages = Math.ceil(mWebview!!.contentHeightVal.toDouble() / mWebview!!.webViewHeight).toInt()
+                    val page = (progress * totalPages) / seekbar.maximum
+                   //  webViewPager!!.setCurrentPage(page)
+                }
+            }
+        })
     }
 
     private fun updatePagesLeftTextBg() {
@@ -677,6 +692,7 @@ class FolioPageFragment : Fragment(),
                 pagesRemainingStrFormat, pagesRemaining
             )
 
+            /*
             val minutesRemaining = Math.ceil((pagesRemaining * mTotalMinutes).toDouble() / totalPages).toInt()
             val minutesRemainingStr: String
             if (minutesRemaining > 1) {
@@ -693,7 +709,7 @@ class FolioPageFragment : Fragment(),
                 minutesRemainingStr = getString(R.string.less_than_minute)
             }
 
-            mMinutesLeftTextView!!.text = minutesRemainingStr
+            mMinutesLeftTextView!!.text = minutesRemainingStr*/
             mPagesLeftTextView!!.text = pagesRemainingStr
         } catch (exp: java.lang.ArithmeticException) {
             Log.e("divide error", exp.toString())

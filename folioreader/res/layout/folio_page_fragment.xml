@@ -38,10 +38,9 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/indicatorLayout"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="2dp"
+        android:layout_marginRight="-15dp"
         android:animateLayoutChanges="true"
-        android:thumb="@drawable/thumb"
-        android:visibility="invisible" />
+        android:thumb="@drawable/thumb"/>
 
     <LinearLayout
         android:id="@+id/indicatorLayout"

@@ -42,10 +42,15 @@ public class VerticalSeekbar extends AppCompatSeekBar {
     }
 
     private OnSeekBarChangeListener mOnChangeListener;
+    private ISeekListener mOnSeekListener;
 
     @Override
     public void setOnSeekBarChangeListener(OnSeekBarChangeListener mOnChangeListener) {
         this.mOnChangeListener = mOnChangeListener;
+    }
+
+    public void setSeekListener(ISeekListener mOnChangeListener) {
+        this.mOnSeekListener = mOnChangeListener;
     }
 
     private int mLastProgress = 0;
@@ -65,7 +70,8 @@ public class VerticalSeekbar extends AppCompatSeekBar {
                 break;
             case MotionEvent.ACTION_MOVE:
                 super.onTouchEvent(event);
-                int progress = getMax() - (int) (getMax() * event.getY() / getHeight());
+
+                int progress = (int) (getMax() * event.getY() / getHeight());
 
                 // Ensure progress stays within boundaries
                 if (progress < 0) {
@@ -74,12 +80,17 @@ public class VerticalSeekbar extends AppCompatSeekBar {
                 if (progress > getMax()) {
                     progress = getMax();
                 }
-                setProgress(progress);  // Draw progress
+                // setProgress(progress);  // Draw progress
                 if (progress != mLastProgress) {
                     // Only enact listener if the progress has actually changed
                     mLastProgress = progress;
                     if (mOnChangeListener != null)
                         mOnChangeListener.onProgressChanged(this, progress, true);
+
+                    if (mOnSeekListener != null)
+                    {
+                        mOnSeekListener.OnSeek((double)progress/ getMax());
+                    }
                 }
 
                 onSizeChanged(getWidth(), getHeight(), 0, 0);
@@ -89,6 +100,11 @@ public class VerticalSeekbar extends AppCompatSeekBar {
             case MotionEvent.ACTION_UP:
                 if (mOnChangeListener != null)
                     mOnChangeListener.onStopTrackingTouch(this);
+
+                if (mOnSeekListener != null)
+                {
+                    mOnSeekListener.OnSeek(event.getY() / getHeight());
+                }
                 setPressed(false);
                 setSelected(false);
                 break;

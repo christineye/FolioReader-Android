@@ -15,12 +15,19 @@
  */
 package com.folioreader.android.sample;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.folioreader.Config;
@@ -75,24 +82,50 @@ public class HomeActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
 
-                ReadLocator readLocator = getLastReadLocator();
+              //  ReadLocator readLocator = getLastReadLocator("demo");
 
                 Config config = AppUtil.getSavedConfig(getApplicationContext());
                 if (config == null)
                     config = new Config();
                 config.setAllowedDirection(Config.AllowedDirection.VERTICAL_AND_HORIZONTAL);
 
-                folioReader.setReadLocator(readLocator);
+               // folioReader.setReadLocator(readLocator);
                 folioReader.setConfig(config, true)
                         .openBook("file:///android_asset/TheSilverChair.epub");
             }
         });
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        }
+
+        Intent intent = getIntent();
+        if (intent != null)
+        {
+            Uri data = intent.getData();
+            if (data != null)
+            {
+
+                String filepath = Uri.decode(getIntent().getDataString().replace("file://", ""));
+
+                String name = data.getPath();
+                int cut = name.lastIndexOf('/');
+                if (cut != -1) {
+                    name = name.substring(cut + 1);
+                }
+                // ReadLocator readLocator = getLastReadLocator(name);
+                folioReader.openBook(filepath);
+            }
+        }
     }
 
-    private ReadLocator getLastReadLocator() {
+    private ReadLocator getLastReadLocator(String name) {
 
-        String jsonString = loadAssetTextAsString("Locators/LastReadLocators/last_read_locator_1.json");
-        return ReadLocator.fromJson(jsonString);
+        //String jsonString = loadAssetTextAsString("Locators/LastReadLocators/" ".json");
+        //return ReadLocator.fromJson(jsonString);
+        return null;
     }
 
     @Override
