@@ -86,7 +86,6 @@ b, strong, th {font-weight: bolder !important;}
 /* Forced font overrides */
 code, kbd, pre, samp, tt {
     font-family: monospace, monospace !important;
-    font-size: 1rem;
 }
 button, input, select, textarea { display: inline-block !important; }
 /*h1, h2, h3, h4, h5, h6 { font-weight: 400!important; }*/

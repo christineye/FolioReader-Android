@@ -73,18 +73,17 @@ public class AnnotationDictionaryTable {
 
     public static final String SQL_DROP = "DROP TABLE IF EXISTS " + TABLE_NAME;
 
-    public boolean insertWord(String word, String meaning, String romanization) {
+    public boolean insertWord(String word, String meaning, String romanization, int isDefault) {
 
         ContentValues wordValues = new ContentValues();
         wordValues.put(WORD, word);
-        wordValues.put(LEARNED, 0);
         database.insertWithOnConflict(WORD_TABLE, null, wordValues, SQLiteDatabase.CONFLICT_REPLACE);
 
         ContentValues values = new ContentValues();
         values.put(WORD, word);
         values.put(MEANING, meaning);
         values.put(ROMANIZATION, romanization);
-        values.put(ISDEFAULT, 0);
+        values.put(ISDEFAULT, isDefault);
         return database.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE) > 0;
     }
 
@@ -129,6 +128,35 @@ public class AnnotationDictionaryTable {
             defs.add(new AnnotationDefinition(c.getInt(5), c.getInt(0), word, c.getString(1), c.getString(2), c.getInt(3) == 1, c.getInt(4)));
         }
         c.close();
+        return defs;
+    }
+
+    public List<AnnotationDefinition> getDefinitionsForWordAndSubWords(String word) {
+        List<AnnotationDefinition> defs = getDefinitionsForWord(word);
+
+        if (word.length() > 1) {
+            StringBuilder builder = new StringBuilder();
+            String[] params = new String[word.trim().length()];
+            for (int i = 0; i < word.trim().length(); i++) {
+                params[i] = word.substring(i, i + 1);
+
+                if (i > 0)
+                {
+                    builder.append(",");
+                }
+                builder.append("?");
+            }
+
+            Cursor c = database.rawQuery("SELECT distinct id, romanization, meaning, isdefault, learned, wordid, word FROM "
+                    + TABLE_NAME + " INNER JOIN " + WORD_TABLE + " using(word)"
+                    + " WHERE " + TABLE_NAME + "." + WORD + " IN (" + builder.toString() + ")"
+                    + "group by id order by isdefault desc, id", params);
+
+            while (c.moveToNext()) {
+                defs.add(new AnnotationDefinition(c.getInt(5), c.getInt(0), c.getString(6), c.getString(1), c.getString(2), c.getInt(3) == 1, c.getInt(4)));
+            }
+            c.close();
+        }
         return defs;
     }
 

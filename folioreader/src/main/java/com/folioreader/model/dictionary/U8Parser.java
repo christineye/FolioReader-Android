@@ -71,7 +71,14 @@ public class U8Parser {
                     definition = definition.substring(0, definition.length() - 1);
                 }
 
-                databaseHelper.insertWord(simplified, definition, pinyin);
+                int isDefault = 0;
+                if (definition.startsWith("variant of") || definition.startsWith("surname") || definition.startsWith("see ")
+                        || definition.startsWith("abbr.") || definition.startsWith("old variant"))
+                {
+                    isDefault = -1;
+                }
+
+                databaseHelper.insertWord(simplified, definition, pinyin, isDefault);
 
                 if (i % 10 == 0)
                 {

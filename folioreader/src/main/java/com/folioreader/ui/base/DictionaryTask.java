@@ -40,28 +40,10 @@ public class DictionaryTask extends AsyncTask<String, Void, List<AnnotationDicti
         String strUrl = strings[0];
         try {
 
-            /*
-            Log.v(TAG, "-> doInBackground -> url -> " + strUrl);
-            URL url = new URL(strUrl);
-            HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
-            if (Build.VERSION.SDK_INT <= 20)
-                httpsURLConnection.setSSLSocketFactory(new TLSSocketFactory());
-            InputStream inputStream = httpsURLConnection.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream,
-                    AppUtil.charsetNameForURLConnection(httpsURLConnection)));
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-            return objectMapper.readValue(stringBuilder.toString(), Dictionary.class);*/
 
             AnnotationDictionaryTable table = new AnnotationDictionaryTable(context.get());
 
-            return table.getDefinitionsForWord(strings[0]);
+            return table.getDefinitionsForWordAndSubWords(strings[0]);
 
 
         } catch (Exception e) {

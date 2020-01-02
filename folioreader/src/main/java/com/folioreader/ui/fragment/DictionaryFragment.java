@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.folioreader.Config;
 import com.folioreader.Constants;
 import com.folioreader.R;
+import com.folioreader.model.dictionary.AnnotationChangeManager;
 import com.folioreader.model.dictionary.Dictionary;
 import com.folioreader.model.dictionary.Wikipedia;
 import com.folioreader.model.sqlite.AnnotationDictionaryTable;
@@ -32,7 +33,6 @@ import com.folioreader.ui.base.SetDefaultDefinitionTask;
 import com.folioreader.ui.base.SetLearnedTask;
 import com.folioreader.ui.base.WikipediaCallBack;
 import com.folioreader.ui.base.WikipediaTask;
-import com.folioreader.ui.view.AnnotationChangeCallback;
 import com.folioreader.util.AppUtil;
 import com.folioreader.util.UiUtil;
 
@@ -54,7 +54,7 @@ public class DictionaryFragment extends DialogFragment
 
     private MediaPlayer mediaPlayer;
     private RecyclerView dictResults;
-    private TextView noNetwork, dictionary, wikipedia, wikiWord, def, wordTextView;
+    private TextView noNetwork, dictionary, wikipedia, wikiWord, def, wordTextView, isLearnedText;
     private ProgressBar progressBar;
     private Button googleSearch;
     private CheckBox isLearnedCheckbox;
@@ -62,11 +62,9 @@ public class DictionaryFragment extends DialogFragment
     private WebView wikiWebView;
     private AnnotatedDictionaryAdapter mAdapter;
     private ImageView imageViewClose;
-    private AnnotationChangeCallback callback;
 
-    public DictionaryFragment(AnnotationChangeCallback callback)
+    public DictionaryFragment()
     {
-        this.callback = callback;
     }
 
     @Override
@@ -98,6 +96,7 @@ public class DictionaryFragment extends DialogFragment
         progressBar = (ProgressBar) view.findViewById(R.id.progress);
         dictResults = (RecyclerView) view.findViewById(R.id.rv_dict_results);
 
+        isLearnedText = (TextView) view.findViewById(R.id.learned_text);
         isLearnedCheckbox = (CheckBox) view.findViewById(R.id.learned_checkbox);
         googleSearch = (Button) view.findViewById(R.id.btn_google_search);
         dictionary = (TextView) view.findViewById(R.id.btn_dictionary);
@@ -186,6 +185,8 @@ public class DictionaryFragment extends DialogFragment
             def.setTextColor(nightTextColor);
             def.setBackgroundColor(Color.BLACK);
             noNetwork.setTextColor(nightTextColor);
+            isLearnedText.setTextColor(nightTextColor);
+            isLearnedCheckbox.setBackgroundColor(Color.WHITE);
 
         } else {
             view.findViewById(R.id.contentView).setBackgroundColor(Color.WHITE);
@@ -196,6 +197,7 @@ public class DictionaryFragment extends DialogFragment
             wikiWord.setBackgroundColor(Color.WHITE);
             def.setBackgroundColor(Color.WHITE);
             googleSearch.setTextColor(Color.WHITE);
+            isLearnedText.setTextColor(Color.rgb(0,0,0));
         }
     }
 
@@ -259,7 +261,7 @@ public class DictionaryFragment extends DialogFragment
     @Override
     public void onAnnotationChange(AnnotationDictionaryTable.AnnotationDefinition def)
     {
-        callback.handleAnnotationChange(def);
+        AnnotationChangeManager.Notify(def);
     }
 
     @Override
@@ -278,7 +280,7 @@ public class DictionaryFragment extends DialogFragment
             noNetwork.setText("Word not found");
         } else {
             wordTextView.setText(word);
-            mAdapter.setResults(defs);
+            mAdapter.setResults(word, defs);
             dictResults.setAdapter(mAdapter);
 
             AnnotationDictionaryTable.AnnotationDefinition annotationDefinition = defs.get(0);

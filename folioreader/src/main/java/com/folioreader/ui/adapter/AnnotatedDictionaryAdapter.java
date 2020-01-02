@@ -29,6 +29,7 @@ public class AnnotatedDictionaryAdapter extends RecyclerView.Adapter<AnnotatedDi
     private Context context;
     private DictionaryCallBack callBack;
     private static Config config;
+    private String word;
 
     public AnnotatedDictionaryAdapter(Context context, DictionaryCallBack callBack) {
         this.results = new ArrayList<>();
@@ -53,20 +54,27 @@ public class AnnotatedDictionaryAdapter extends RecyclerView.Adapter<AnnotatedDi
 
         holder.definition.setText(res.Definition);
 
-        holder.radioButton.setChecked(res.IsDefault);
+        if (this.word.equalsIgnoreCase(res.Word)) {
+            holder.radioButton.setChecked(res.IsDefault);
 
 
-        holder.radioButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                callBack.setDefaultDefinitionForWord(res.Word, res.DefinitionId);
-            }
-        });
+            holder.radioButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    callBack.setDefaultDefinitionForWord(res.Word, res.DefinitionId);
+                }
+            });
+        }
+        else
+        {
+            holder.radioButton.setVisibility(View.INVISIBLE);
+        }
     }
 
 
 
-    public void setResults(List<AnnotationDictionaryTable.AnnotationDefinition> resultsList) {
+    public void setResults(String word, List<AnnotationDictionaryTable.AnnotationDefinition> resultsList) {
+        this.word = word;
         if (resultsList != null && !resultsList.isEmpty()) {
             results.clear();
             results.addAll(resultsList);

@@ -827,17 +827,75 @@ function onTextSelectionItemClicked(id) {
     FolioWebView.onTextSelectionItemClicked(id, selectedText);
 }
 
-function updateAnnotation(wordId, isLearned, subtext)
+function getTone(romanization)
 {
-    console.debug("-> updateAnnotation: " + wordId + "," + isLearned + "," + subtext);
+    if (romanization.includes("1"))
+    {
+        toneSymbol = "—";
+        toneClass = "t1";
+    }
+    else if (romanization.includes("2"))
+    {
+        toneSymbol = "/";
+        toneClass = "t2";
+    }
+    else if (romanization.includes("3"))
+    {
+        toneSymbol = "˅";
+        toneClass = "t3";
+    }
+    else if (romanization.includes("4"))
+    {
+        toneSymbol = "\\";
+        toneClass = "t4";
+    }
+    else
+    {
+        toneSymbol = ""
+        toneClass = ""
+    }
+
+    return [toneSymbol, toneClass]
+
+                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\")'>" + sub
+                                                + "<div class='d " + toneClass + "'>" + toneSymbol
+                                                + "</div></div>");
+}
+
+function updateAnnotation(wordId, isLearned, definition, romanization, word)
+{
+    console.debug("-> updateAnnotation: " + wordId + "," + isLearned + "," + word + ", " + romanization);
     if (isLearned)
     {
-        $("." + wordId + " .d").hide()
+       // $("." + wordId + " .d").hide()
+
+        if (word.length == 1)
+        {
+            var tone = getTone(romanization)
+            $("." + wordId + " .d").text(tone[0])
+            $("." + wordId + " .d").removeClass("t1").removeClass("t2").removeClass("t3").removeClass("t4").addClass(tone[1])
+        }
+        else
+        {
+            var subromanizations = romanization.split(" ")
+            var subhtml = ""
+            for (var i = 0; i < word.length;i++)
+            {
+                var tone = getTone(subromanizations[i])
+                subhtml += "<div class='w'>" + word[i]  + "<div class='d " + tone[1] + "'>" + tone[0]
+                                                                           + "</div></div>"
+            }
+
+            console.debug("-> updateAnnotation: " + subhtml);
+
+             $("." + wordId).html(subhtml)
+        }
+
     }
     else
     {
         $("." + wordId + " .d").show();
-        $("." + wordId + " .d").text(subtext);
+        $("." + wordId + " .d").text("[" + romanization + "] " + definition);
     }
 }
 

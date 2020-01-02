@@ -28,6 +28,8 @@ import com.folioreader.R
 import com.folioreader.model.DisplayUnit
 import com.folioreader.model.HighLight
 import com.folioreader.model.HighlightImpl.HighlightStyle
+import com.folioreader.model.dictionary.AnnotationChangeListener
+import com.folioreader.model.dictionary.AnnotationChangeManager
 import com.folioreader.model.sqlite.HighLightTable
 import com.folioreader.ui.activity.FolioActivity
 import com.folioreader.ui.activity.FolioActivityCallback
@@ -48,12 +50,7 @@ import java.lang.ref.WeakReference
  */
 
 
-interface AnnotationChangeCallback
-{
-    fun handleAnnotationChange(definition : AnnotationDictionaryTable.AnnotationDefinition)
-}
-
-class FolioWebView : WebView, AnnotationChangeCallback {
+class FolioWebView : WebView, AnnotationChangeListener {
 
     companion object {
 
@@ -251,6 +248,8 @@ class FolioWebView : WebView, AnnotationChangeCallback {
         }
 
         initViewTextSelection()
+
+        AnnotationChangeManager.AddListener(this);
     }
 
     fun initViewTextSelection() {
@@ -319,7 +318,7 @@ class FolioWebView : WebView, AnnotationChangeCallback {
     {
         Log.v(LOG_TAG, "clicked " + word);
 
-        val dictionaryFragment = DictionaryFragment(this)
+        val dictionaryFragment = DictionaryFragment()
         val bundle = Bundle()
         bundle.putString(Constants.SELECTED_WORD, word)
         dictionaryFragment.arguments = bundle
@@ -352,7 +351,7 @@ class FolioWebView : WebView, AnnotationChangeCallback {
     }
 
     private fun showDictDialog(selectedText: String?) {
-        val dictionaryFragment = DictionaryFragment(this)
+        val dictionaryFragment = DictionaryFragment()
         val bundle = Bundle()
         bundle.putString(Constants.SELECTED_WORD, selectedText?.trim())
         dictionaryFragment.arguments = bundle
@@ -365,7 +364,7 @@ class FolioWebView : WebView, AnnotationChangeCallback {
         val learned = if (definition.Learned > 0) "true" else "false"
 
         val internalString = "[" + definition.Romanization +"] " + definition.Definition
-        val javascript = "javascript:updateAnnotation(" + definition.WordId + "," + learned + "," + "\"" + internalString.replace("\"", "\\\"") + "\")"
+        val javascript = "javascript:updateAnnotation(" + definition.WordId + "," + learned + "," + "\"" + definition.Definition.replace("\"", "\\\"") + "\", \"" + definition.Romanization + "\", \"" + definition.Word + "\")"
 
         loadUrl(javascript)
     }

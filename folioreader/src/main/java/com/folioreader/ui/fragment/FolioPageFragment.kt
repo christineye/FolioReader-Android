@@ -381,6 +381,7 @@ class FolioPageFragment : Fragment(),
         mWebview!!.addJavascriptInterface(loadingView, "LoadingView")
         mWebview!!.addJavascriptInterface(mWebview, "FolioWebView")
 
+        /*
         mWebview!!.setScrollListener(object : FolioWebView.ScrollListener {
             override fun onScrollChange(percent: Int) {
 
@@ -388,12 +389,14 @@ class FolioPageFragment : Fragment(),
                 updatePagesLeftText(percent)
             }
         })
-
+*/
         mWebview!!.webViewClient = webViewClient
         mWebview!!.webChromeClient = webChromeClient
 
         mWebview!!.settings.defaultTextEncodingName = "utf-8"
         HtmlTask(this).execute(chapterUrl.toString())
+
+        mPagesLeftTextView!!.text = spineItem.title;
     }
 
     private val webViewClient = object : WebViewClient() {
@@ -682,6 +685,9 @@ class FolioPageFragment : Fragment(),
 
     private fun updatePagesLeftText(scrollY: Int) {
         try {
+
+
+/*
             val currentPage = (Math.ceil(scrollY.toDouble() / mWebview!!.webViewHeight) + 1).toInt()
             val totalPages = Math.ceil(mWebview!!.contentHeightVal.toDouble() / mWebview!!.webViewHeight).toInt()
             val pagesRemaining = totalPages - currentPage
@@ -693,7 +699,7 @@ class FolioPageFragment : Fragment(),
                 Locale.US,
                 pagesRemainingStrFormat, pagesRemaining
             )
-
+*/
             /*
             val minutesRemaining = Math.ceil((pagesRemaining * mTotalMinutes).toDouble() / totalPages).toInt()
             val minutesRemainingStr: String
@@ -712,7 +718,9 @@ class FolioPageFragment : Fragment(),
             }
 
             mMinutesLeftTextView!!.text = minutesRemainingStr*/
-            mPagesLeftTextView!!.text = pagesRemainingStr
+            //mPagesLeftTextView!!.text = pagesRemainingStr
+
+            mPagesLeftTextView!!.text = spineItem.title
         } catch (exp: java.lang.ArithmeticException) {
             Log.e("divide error", exp.toString())
         } catch (exp: IllegalStateException) {

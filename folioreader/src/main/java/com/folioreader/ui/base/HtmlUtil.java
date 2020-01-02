@@ -1,6 +1,8 @@
 package com.folioreader.ui.base;
 
 import android.content.Context;
+import android.text.Html;
+
 import com.folioreader.Config;
 import com.folioreader.Constants;
 import com.folioreader.R;
@@ -140,9 +142,11 @@ public final class HtmlUtil {
                 head = head.replaceAll("(?s)<style.*?</style>", "");
 
                 head = head.replace("</head>",
-                        "<style>body { font-size: 30px } "
+                        "<style>body, div, p, code, pre { font-size: 30px !important } "
                         + ".w { display: inline-block !important; margin-left: 5px; margin-right: 0px; vertical-align: top; text-align: center; }"
-                                + ".d { display: block; text-indent: 0px !important; font-size: 10px; max-width: 80px; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-all !important; overflow: hidden; text-overflow: ellipsis; max-height: 26px; }"
+                                + ".d { display: block; text-indent: 0px !important; font-size: 10px !important; max-width: 80px; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-all !important; overflow: hidden; text-overflow: ellipsis; max-height: 26px; }"
+                                + ".d.dl {max-width: 120px !important;max-height: 26px; font-size: 10px !important;  }"
+                                + ".t1 { margin-top: -10px; font-weight: bold; font-size: 30px !important; color: rgba(252,199,189,1) !important; } .t2 {font-weight: bold; font-size: 30px !important; color:#93843e !important; } .t3 {font-weight: bold; font-size: 40px !important; color:#377221 !important;} .t4 {font-weight: bold; font-size: 30px !important; color:#3b918d !important;} "
             + " </style></head>");
 
                 StringBuilder annotatedBody = new StringBuilder();
@@ -178,10 +182,51 @@ public final class HtmlUtil {
                                     AnnotationDictionaryTable.AnnotationDefinition mainDef = defs.get(sub).get(0);
 
                                     if (mainDef.Learned == 0) {
+                                        String longClass = "";
+                                        if (j >= 4)
+                                        {
+                                            longClass = "dl";
+                                        }
+
                                         annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\")'>" + sub
-                                                + "<div class='d'>[" + mainDef.Romanization + "] " + mainDef.Definition.replace("/", "/ ") + "</div></div>");
+                                                + "<div class='d " + longClass + "'>[" + mainDef.Romanization + "] "
+                                                + Html.escapeHtml(mainDef.Definition.replace("/", "/ "))
+                                                + "</div></div>");
                                     } else {
-                                        annotatedBody.append(sub);
+
+                                        if (j > 1)
+                                        {
+                                            continue;
+                                        }
+
+                                        String thisRomanization = mainDef.Romanization;
+                                        String toneSymbol = "";
+                                        String toneClass = "";
+                                        if (thisRomanization.contains("1"))
+                                        {
+                                            toneSymbol = "—";
+                                            toneClass = "t1";
+                                        }
+                                        else if (thisRomanization.contains("2"))
+                                        {
+                                            toneSymbol = "/";
+                                            toneClass = "t2";
+                                        }
+                                        else if (thisRomanization.contains("3"))
+                                        {
+                                            toneSymbol = "˅";
+                                            toneClass = "t3";
+                                        }
+                                        else if (thisRomanization.contains("4"))
+                                        {
+                                            toneSymbol = "\\";
+                                            toneClass = "t4";
+                                        }
+
+                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\")'>" + sub
+                                                + "<div class='d " + toneClass + "'>" + toneSymbol
+                                                + "</div></div>");
+
                                     }
 
                                     found = true;
