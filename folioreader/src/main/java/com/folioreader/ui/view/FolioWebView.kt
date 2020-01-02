@@ -35,6 +35,7 @@ import com.folioreader.ui.fragment.DictionaryFragment
 import com.folioreader.ui.fragment.FolioPageFragment
 import com.folioreader.util.AppUtil
 import com.folioreader.util.HighlightUtil
+import com.folioreader.model.sqlite.AnnotationDictionaryTable
 import com.folioreader.util.UiUtil
 import dalvik.system.PathClassLoader
 import kotlinx.android.synthetic.main.text_selection.view.*
@@ -45,7 +46,14 @@ import java.lang.ref.WeakReference
 /**
  * @author by mahavir on 3/31/16.
  */
-class FolioWebView : WebView {
+
+
+interface AnnotationChangeCallback
+{
+    fun handleAnnotationChange(definition : AnnotationDictionaryTable.AnnotationDefinition)
+}
+
+class FolioWebView : WebView, AnnotationChangeCallback {
 
     companion object {
 
@@ -307,6 +315,18 @@ class FolioWebView : WebView {
     }
 
     @JavascriptInterface
+    fun onWordClicked(word : String)
+    {
+        Log.v(LOG_TAG, "clicked " + word);
+
+        val dictionaryFragment = DictionaryFragment(this)
+        val bundle = Bundle()
+        bundle.putString(Constants.SELECTED_WORD, word)
+        dictionaryFragment.arguments = bundle
+        dictionaryFragment.show(parentFragment.fragmentManager, DictionaryFragment::class.java.name)
+    }
+
+    @JavascriptInterface
     fun onTextSelectionItemClicked(id: Int, selectedText: String?) {
 
         uiHandler.post { loadUrl("javascript:clearSelection()") }
@@ -332,11 +352,22 @@ class FolioWebView : WebView {
     }
 
     private fun showDictDialog(selectedText: String?) {
-        val dictionaryFragment = DictionaryFragment()
+        val dictionaryFragment = DictionaryFragment(this)
         val bundle = Bundle()
         bundle.putString(Constants.SELECTED_WORD, selectedText?.trim())
         dictionaryFragment.arguments = bundle
         dictionaryFragment.show(parentFragment.fragmentManager, DictionaryFragment::class.java.name)
+    }
+
+    @Override
+    override fun handleAnnotationChange(definition : AnnotationDictionaryTable.AnnotationDefinition)
+    {
+        val learned = if (definition.Learned > 0) "true" else "false"
+
+        val internalString = "[" + definition.Romanization +"] " + definition.Definition
+        val javascript = "javascript:updateAnnotation(" + definition.WordId + "," + learned + "," + "\"" + internalString.replace("\"", "\\\"") + "\")"
+
+        loadUrl(javascript)
     }
 
     private fun onHighlightColorItemsClicked(style: HighlightStyle, isAlreadyCreated: Boolean) {

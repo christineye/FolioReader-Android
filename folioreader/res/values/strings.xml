@@ -93,6 +93,7 @@
     <string name="cannot_access_epub_message">Cannot open epub it needs storage access !</string>
     <string name="direction_horizontal">Horizontal</string>
     <string name="direction_vertical">Vertical</string>
+    <string name="annotate">Annotate</string>
 
     <string name="xhtml_mime_type" translatable="false">application/xhtml+xml</string>
     <string name="html_mime_type" translatable="false">text/html</string>

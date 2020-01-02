@@ -63,4 +63,6 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-annotations:$versions.jackson"
     implementation "com.fasterxml.jackson.core:jackson-databind:$versions.jackson"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$versions.jackson"
+
+    debugImplementation 'com.amitshekhar.android:debug-db:1.0.6'
 }

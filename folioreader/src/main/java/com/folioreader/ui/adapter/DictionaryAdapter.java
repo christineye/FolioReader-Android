@@ -124,6 +124,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<DictionaryAdapter.Di
 
     public void setResults(List<DictionaryResults> resultsList) {
         if (resultsList != null && !resultsList.isEmpty()) {
+            results.clear();
             results.addAll(resultsList);
             notifyDataSetChanged();
         }
@@ -146,7 +147,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<DictionaryAdapter.Di
         public DictionaryHolder(View itemView) {
             super(itemView);
 
-            name = (TextView) itemView.findViewById(R.id.tv_word);
+           /* name = (TextView) itemView.findViewById(R.id.tv_word);
             //sound = (ImageButton) itemView.findViewById(R.id.ib_speak);
             definition = (TextView) itemView.findViewById(R.id.tv_definition);
             example = (TextView) itemView.findViewById(R.id.tv_examples);
@@ -161,7 +162,7 @@ public class DictionaryAdapter extends RecyclerView.Adapter<DictionaryAdapter.Di
                 example.setTextColor(nightTextColor);
             } else {
                 rootView.setBackgroundColor(Color.WHITE);
-            }
+            }*/
         }
     }
 }

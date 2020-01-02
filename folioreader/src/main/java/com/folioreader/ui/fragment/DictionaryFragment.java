@@ -23,17 +23,23 @@ import com.folioreader.Constants;
 import com.folioreader.R;
 import com.folioreader.model.dictionary.Dictionary;
 import com.folioreader.model.dictionary.Wikipedia;
+import com.folioreader.model.sqlite.AnnotationDictionaryTable;
+import com.folioreader.ui.adapter.AnnotatedDictionaryAdapter;
 import com.folioreader.ui.adapter.DictionaryAdapter;
 import com.folioreader.ui.base.DictionaryCallBack;
 import com.folioreader.ui.base.DictionaryTask;
+import com.folioreader.ui.base.SetDefaultDefinitionTask;
+import com.folioreader.ui.base.SetLearnedTask;
 import com.folioreader.ui.base.WikipediaCallBack;
 import com.folioreader.ui.base.WikipediaTask;
+import com.folioreader.ui.view.AnnotationChangeCallback;
 import com.folioreader.util.AppUtil;
 import com.folioreader.util.UiUtil;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 /**
  * @author gautam chibde on 4/7/17.
@@ -48,13 +54,20 @@ public class DictionaryFragment extends DialogFragment
 
     private MediaPlayer mediaPlayer;
     private RecyclerView dictResults;
-    private TextView noNetwork, dictionary, wikipedia, wikiWord, def;
+    private TextView noNetwork, dictionary, wikipedia, wikiWord, def, wordTextView;
     private ProgressBar progressBar;
     private Button googleSearch;
+    private CheckBox isLearnedCheckbox;
     private LinearLayout wikiLayout;
     private WebView wikiWebView;
-    private DictionaryAdapter mAdapter;
+    private AnnotatedDictionaryAdapter mAdapter;
     private ImageView imageViewClose;
+    private AnnotationChangeCallback callback;
+
+    public DictionaryFragment(AnnotationChangeCallback callback)
+    {
+        this.callback = callback;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -81,9 +94,11 @@ public class DictionaryFragment extends DialogFragment
         super.onViewCreated(view, savedInstanceState);
 
         noNetwork = (TextView) view.findViewById(R.id.no_network);
+        wordTextView = (TextView) view.findViewById(R.id.dictionary_word);
         progressBar = (ProgressBar) view.findViewById(R.id.progress);
         dictResults = (RecyclerView) view.findViewById(R.id.rv_dict_results);
 
+        isLearnedCheckbox = (CheckBox) view.findViewById(R.id.learned_checkbox);
         googleSearch = (Button) view.findViewById(R.id.btn_google_search);
         dictionary = (TextView) view.findViewById(R.id.btn_dictionary);
         wikipedia = (TextView) view.findViewById(R.id.btn_wikipedia);
@@ -95,6 +110,7 @@ public class DictionaryFragment extends DialogFragment
         wikiWebView.getSettings().setLoadsImagesAutomatically(true);
         wikiWebView.setWebViewClient(new WebViewClient());
         wikiWebView.getSettings().setJavaScriptEnabled(true);
+
         wikiWebView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         dictionary.setOnClickListener(new View.OnClickListener() {
@@ -120,6 +136,15 @@ public class DictionaryFragment extends DialogFragment
             }
         });
 
+        final DictionaryCallBack callback = this;
+        isLearnedCheckbox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SetLearnedTask task = new SetLearnedTask(callback, getContext());
+                task.execute(word, isLearnedCheckbox.isChecked() ? "1" : "0");
+            }
+        });
+
         imageViewClose = view.findViewById(R.id.btn_close);
         imageViewClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,7 +153,7 @@ public class DictionaryFragment extends DialogFragment
             }
         });
         dictResults.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mAdapter = new DictionaryAdapter(getActivity(), this);
+        mAdapter = new AnnotatedDictionaryAdapter(getActivity(), this);
 
         configureTheme(view);
 
@@ -185,14 +210,8 @@ public class DictionaryFragment extends DialogFragment
         wikipedia.setSelected(false);
         wikiLayout.setVisibility(View.GONE);
         dictResults.setVisibility(View.VISIBLE);
-        DictionaryTask task = new DictionaryTask(this);
-        String urlString = null;
-        try {
-            urlString = Constants.DICTIONARY_BASE_URL + URLEncoder.encode(word, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            Log.e(TAG, "-> loadDictionary", e);
-        }
-        task.execute(urlString);
+        DictionaryTask task = new DictionaryTask(this, getContext());
+        task.execute(word);
     }
 
     private void loadWikipedia() {
@@ -232,10 +251,48 @@ public class DictionaryFragment extends DialogFragment
             googleSearch.setVisibility(View.VISIBLE);
             noNetwork.setText("Word not found");
         } else {
-            mAdapter.setResults(dictionary.getResults());
+           // mAdapter.setResults(dictionary.getResults());
             dictResults.setAdapter(mAdapter);
         }
     }
+
+    @Override
+    public void onAnnotationChange(AnnotationDictionaryTable.AnnotationDefinition def)
+    {
+        callback.handleAnnotationChange(def);
+    }
+
+    @Override
+    public void closeRequested()
+    {
+        dismiss();
+    }
+
+    @Override
+    public void onAnnotationListReceived(List<AnnotationDictionaryTable.AnnotationDefinition> defs)
+    {
+        progressBar.setVisibility(View.GONE);
+        if (defs == null || defs.isEmpty()) {
+            noNetwork.setVisibility(View.VISIBLE);
+            googleSearch.setVisibility(View.VISIBLE);
+            noNetwork.setText("Word not found");
+        } else {
+            wordTextView.setText(word);
+            mAdapter.setResults(defs);
+            dictResults.setAdapter(mAdapter);
+
+            AnnotationDictionaryTable.AnnotationDefinition annotationDefinition = defs.get(0);
+            isLearnedCheckbox.setChecked(annotationDefinition.Learned > 0);
+        }
+    }
+
+    @Override
+    public void setDefaultDefinitionForWord(String word, int id)
+    {
+        SetDefaultDefinitionTask task = new SetDefaultDefinitionTask(this, getContext());
+        task.execute(word, Integer.toString(id));
+    }
+
 
     @Override
     @SuppressWarnings("PMD.InefficientEmptyStringCheck")

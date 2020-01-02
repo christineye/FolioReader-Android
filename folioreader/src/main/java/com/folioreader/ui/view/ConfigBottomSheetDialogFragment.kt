@@ -149,6 +149,13 @@ class ConfigBottomSheetDialogFragment : BottomSheetDialogFragment() {
             buttonHorizontal.isSelected = true
             buttonVertical.isSelected = false
         }
+
+        annotateButton.setOnClickListener{
+            config = AppUtil.getSavedConfig(context)!!
+          //  config.isAnnotate = true
+            AppUtil.saveConfig(context, config)
+            activityCallback.onDirectionChange(Config.Direction.HORIZONTAL)
+        }
     }
 
     private fun configFonts() {

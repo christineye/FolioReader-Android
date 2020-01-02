@@ -316,10 +316,12 @@ class FolioPageFragment : Fragment(),
                     getString(R.string.html_mime_type)
                 }
 
+            val content = HtmlUtil.getHtmlContent(mWebview!!.context, mHtmlString, mConfig!!)
+
             uiHandler.post {
                 mWebview!!.loadDataWithBaseURL(
                     mActivityCallback?.streamerUrl + path,
-                    HtmlUtil.getHtmlContent(mWebview!!.context, mHtmlString, mConfig!!),
+                    content,
                     mimeType,
                     "UTF-8", null
                 )

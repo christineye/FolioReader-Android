@@ -19,53 +19,32 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
 
-/**
- * @author gautam chibde on 4/7/17.
- */
 
-public class DictionaryTask extends AsyncTask<String, Void, List<AnnotationDictionaryTable.AnnotationDefinition>> {
+public class SetDefaultDefinitionTask extends AsyncTask<String, Void, List<AnnotationDictionaryTable.AnnotationDefinition>> {
 
     private static final String TAG = "DictionaryTask";
 
     private DictionaryCallBack callBack;
     private WeakReference<Context> context;
 
-    public DictionaryTask(DictionaryCallBack callBack, Context context) {
+    public SetDefaultDefinitionTask(DictionaryCallBack callBack, Context context) {
         this.callBack = callBack;
         this.context = new WeakReference<>(context);
     }
 
     @Override
     protected List<AnnotationDictionaryTable.AnnotationDefinition> doInBackground(String... strings) {
-        String strUrl = strings[0];
         try {
 
-            /*
-            Log.v(TAG, "-> doInBackground -> url -> " + strUrl);
-            URL url = new URL(strUrl);
-            HttpsURLConnection httpsURLConnection = (HttpsURLConnection) url.openConnection();
-            if (Build.VERSION.SDK_INT <= 20)
-                httpsURLConnection.setSSLSocketFactory(new TLSSocketFactory());
-            InputStream inputStream = httpsURLConnection.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream,
-                    AppUtil.charsetNameForURLConnection(httpsURLConnection)));
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
-            return objectMapper.readValue(stringBuilder.toString(), Dictionary.class);*/
-
             AnnotationDictionaryTable table = new AnnotationDictionaryTable(context.get());
+
+            table.setDefaultForWord(strings[0], strings[1]);
 
             return table.getDefinitionsForWord(strings[0]);
 
 
         } catch (Exception e) {
-            Log.e(TAG, "DictionaryTask failed", e);
+            Log.e(TAG, "SetDefaultDefinition failed", e);
         }
         return null;
     }
@@ -75,6 +54,7 @@ public class DictionaryTask extends AsyncTask<String, Void, List<AnnotationDicti
         super.onPostExecute(dictionary);
         if (dictionary != null) {
             callBack.onAnnotationListReceived(dictionary);
+            callBack.onAnnotationChange(dictionary.get(0));
         } else {
             callBack.onError();
         }

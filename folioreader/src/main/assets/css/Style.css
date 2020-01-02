@@ -80,7 +80,6 @@ img { -webkit-user-select: none; }
 p {
     margin: 1.3em 0 1.5em 0;
     line-height: 1.40em !important;
-    text-indent: 1.25em;
 }
 b, strong, th {font-weight: bolder !important;}
 
@@ -300,6 +299,8 @@ body {
 p, span, div {
     line-height: 1.5 !important;
 }
+
+/*
 @media only screen and (min-device-width: 600px) {
     div {
         font-size: 1rem;
@@ -309,4 +310,4 @@ p, span, div {
         -webkit-hyphens: none !important;
         hyphens: none !important;
     }
-}
+}*/

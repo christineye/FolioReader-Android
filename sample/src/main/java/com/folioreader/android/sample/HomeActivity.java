@@ -21,21 +21,18 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.folioreader.Config;
 import com.folioreader.FolioReader;
 import com.folioreader.model.HighLight;
 import com.folioreader.model.locators.ReadLocator;
-import com.folioreader.ui.base.OnSaveHighlight;
-import com.folioreader.util.AppUtil;
+import com.folioreader.model.sqlite.AppMetadataTable;
+import com.folioreader.model.sqlite.ReadLocatorTable;
+import com.folioreader.ui.base.SaveReadLocator;
 import com.folioreader.util.OnHighlightListener;
 import com.folioreader.util.ReadLocatorListener;
 
@@ -43,14 +40,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HomeActivity extends AppCompatActivity
         implements OnHighlightListener, ReadLocatorListener, FolioReader.OnClosedListener {
 
     private static final String LOG_TAG = HomeActivity.class.getSimpleName();
     private FolioReader folioReader;
+    private String filepath;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -62,38 +58,6 @@ public class HomeActivity extends AppCompatActivity
                 .setReadLocatorListener(this)
                 .setOnClosedListener(this);
 
-        getHighlightsAndSave();
-
-        findViewById(R.id.btn_raw).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Config config = AppUtil.getSavedConfig(getApplicationContext());
-                if (config == null)
-                    config = new Config();
-                config.setAllowedDirection(Config.AllowedDirection.VERTICAL_AND_HORIZONTAL);
-
-                folioReader.setConfig(config, true)
-                        .openBook(R.raw.accessible_epub_3);
-            }
-        });
-
-        findViewById(R.id.btn_assest).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-              //  ReadLocator readLocator = getLastReadLocator("demo");
-
-                Config config = AppUtil.getSavedConfig(getApplicationContext());
-                if (config == null)
-                    config = new Config();
-                config.setAllowedDirection(Config.AllowedDirection.VERTICAL_AND_HORIZONTAL);
-
-               // folioReader.setReadLocator(readLocator);
-                folioReader.setConfig(config, true)
-                        .openBook("file:///android_asset/TheSilverChair.epub");
-            }
-        });
 
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
@@ -101,36 +65,66 @@ public class HomeActivity extends AppCompatActivity
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
         }
 
+        boolean intentUsed = false;
+
         Intent intent = getIntent();
         if (intent != null)
         {
             Uri data = intent.getData();
             if (data != null)
             {
-
-                String filepath = Uri.decode(getIntent().getDataString().replace("file://", ""));
-
-                String name = data.getPath();
-                int cut = name.lastIndexOf('/');
-                if (cut != -1) {
-                    name = name.substring(cut + 1);
-                }
-                // ReadLocator readLocator = getLastReadLocator(name);
-                folioReader.openBook(filepath);
+                Open(Uri.decode(getIntent().getDataString().replace("file://", "")));
+                 intentUsed = true;
             }
         }
+
+        if (!intentUsed)
+        {
+            AppMetadataTable appMetadataTable = new AppMetadataTable(this);
+            String lastBook = appMetadataTable.getValue(AppMetadataTable.LAST_EBOOK);
+
+            if (lastBook != null)
+            {
+                Open(lastBook);
+            }
+        }
+    }
+
+    private void Open(String filepath)
+    {
+        this.filepath = filepath;
+
+        ReadLocator readLocator = getLastReadLocator(filepath);
+
+        if (readLocator != null)
+        {
+            folioReader.setReadLocator(readLocator);
+        }
+
+        folioReader.openBook(filepath);
     }
 
     private ReadLocator getLastReadLocator(String name) {
 
         //String jsonString = loadAssetTextAsString("Locators/LastReadLocators/" ".json");
         //return ReadLocator.fromJson(jsonString);
+        ReadLocatorTable table = new ReadLocatorTable(this);
+        String result = table.getReadLocator(name);
+
+        if (result != null)
+        {
+            return ReadLocator.fromJson(result);
+        }
+
         return null;
     }
 
     @Override
     public void saveReadLocator(ReadLocator readLocator) {
         Log.i(LOG_TAG, "-> saveReadLocator -> " + readLocator.toJson());
+
+        SaveReadLocator task = new SaveReadLocator(this);
+        task.execute(filepath, readLocator.toJson());
     }
 
     /*
@@ -141,25 +135,7 @@ public class HomeActivity extends AppCompatActivity
         new Thread(new Runnable() {
             @Override
             public void run() {
-                ArrayList<HighLight> highlightList = null;
-                ObjectMapper objectMapper = new ObjectMapper();
-                try {
-                    highlightList = objectMapper.readValue(
-                            loadAssetTextAsString("highlights/highlights_data.json"),
-                            new TypeReference<List<HighlightData>>() {
-                            });
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
-                if (highlightList == null) {
-                    folioReader.saveReceivedHighLights(highlightList, new OnSaveHighlight() {
-                        @Override
-                        public void onFinished() {
-                            //You can do anything on successful saving highlight list
-                        }
-                    });
-                }
             }
         }).start();
     }

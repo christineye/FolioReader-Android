@@ -827,6 +827,26 @@ function onTextSelectionItemClicked(id) {
     FolioWebView.onTextSelectionItemClicked(id, selectedText);
 }
 
+function updateAnnotation(wordId, isLearned, subtext)
+{
+    console.debug("-> updateAnnotation: " + wordId + "," + isLearned + "," + subtext);
+    if (isLearned)
+    {
+        $("." + wordId + " .d").hide()
+    }
+    else
+    {
+        $("." + wordId + " .d").show();
+        $("." + wordId + " .d").text(subtext);
+    }
+}
+
+function onClickWord(word)
+{
+    console.debug("-> onClickWord: " + word);
+    FolioWebView.onWordClicked(word);
+}
+
 function onClickHtml() {
     console.debug("-> onClickHtml");
     if (FolioWebView.isPopupShowing()) {
