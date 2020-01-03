@@ -63,16 +63,18 @@ class FolioPageFragment : Fragment(),
 
         private const val BUNDLE_SPINE_INDEX = "BUNDLE_SPINE_INDEX"
         private const val BUNDLE_BOOK_TITLE = "BUNDLE_BOOK_TITLE"
+        private const val BUNDLE_CHAPTER_TITLE = "BUNDLE_CHAPTER_TITLE"
         private const val BUNDLE_SPINE_ITEM = "BUNDLE_SPINE_ITEM"
         private const val BUNDLE_READ_LOCATOR_CONFIG_CHANGE = "BUNDLE_READ_LOCATOR_CONFIG_CHANGE"
         const val BUNDLE_SEARCH_LOCATOR = "BUNDLE_SEARCH_LOCATOR"
 
         @JvmStatic
-        fun newInstance(spineIndex: Int, bookTitle: String, spineRef: Link, bookId: String): FolioPageFragment {
+        fun newInstance(spineIndex: Int, bookTitle: String, spineRef: Link, bookId: String, chapterTitle: String): FolioPageFragment {
             val fragment = FolioPageFragment()
             val args = Bundle()
             args.putInt(BUNDLE_SPINE_INDEX, spineIndex)
             args.putString(BUNDLE_BOOK_TITLE, bookTitle)
+            args.putString(BUNDLE_CHAPTER_TITLE, chapterTitle)
             args.putString(FolioReader.EXTRA_BOOK_ID, bookId)
             args.putSerializable(BUNDLE_SPINE_ITEM, spineRef)
             fragment.arguments = args
@@ -108,6 +110,7 @@ class FolioPageFragment : Fragment(),
     lateinit var spineItem: Link
     private var spineIndex = -1
     private var mBookTitle: String? = null
+    private var mChapterTitle: String? = null
     private var mIsPageReloaded: Boolean = false
 
     private var mIsTrackingSeekBarTouch: Boolean = false
@@ -144,6 +147,7 @@ class FolioPageFragment : Fragment(),
 
         spineIndex = arguments!!.getInt(BUNDLE_SPINE_INDEX)
         mBookTitle = arguments!!.getString(BUNDLE_BOOK_TITLE)
+        mChapterTitle = arguments!!.getString(BUNDLE_CHAPTER_TITLE)
         spineItem = arguments!!.getSerializable(BUNDLE_SPINE_ITEM) as Link
         mBookId = arguments!!.getString(FolioReader.EXTRA_BOOK_ID)
 
@@ -396,7 +400,7 @@ class FolioPageFragment : Fragment(),
         mWebview!!.settings.defaultTextEncodingName = "utf-8"
         HtmlTask(this).execute(chapterUrl.toString())
 
-        mPagesLeftTextView!!.text = spineItem.title;
+        mPagesLeftTextView!!.text = mChapterTitle;
     }
 
     private val webViewClient = object : WebViewClient() {

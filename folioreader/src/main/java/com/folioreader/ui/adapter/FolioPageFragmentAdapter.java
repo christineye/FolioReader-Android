@@ -22,16 +22,18 @@ public class FolioPageFragmentAdapter extends FragmentStatePagerAdapter {
     private static final String LOG_TAG = FolioPageFragmentAdapter.class.getSimpleName();
     private List<Link> mSpineReferences;
     private String mEpubFileName;
+    private List<Link> toc;
     private String mBookId;
     private ArrayList<Fragment> fragments;
     private ArrayList<Fragment.SavedState> savedStateList;
 
     public FolioPageFragmentAdapter(FragmentManager fragmentManager, List<Link> spineReferences,
-                                    String epubFileName, String bookId) {
+                                    String epubFileName, String bookId, List<Link> toc) {
         super(fragmentManager);
         this.mSpineReferences = spineReferences;
         this.mEpubFileName = epubFileName;
         this.mBookId = bookId;
+        this.toc = toc;
         fragments = new ArrayList<>(Arrays.asList(new Fragment[mSpineReferences.size()]));
     }
 
@@ -55,10 +57,22 @@ public class FolioPageFragmentAdapter extends FragmentStatePagerAdapter {
         if (mSpineReferences.size() == 0 || position < 0 || position >= mSpineReferences.size())
             return null;
 
+        String chapterTitle = "";
+        Link spineRef = mSpineReferences.get(position);
+
+        for (int i = 0; i < toc.size(); i++)
+        {
+            if (toc.get(i).getHref().equalsIgnoreCase(spineRef.getHref()))
+            {
+                chapterTitle = toc.get(i).getTitle();
+                break;
+            }
+        }
+
         Fragment fragment = fragments.get(position);
         if (fragment == null) {
             fragment = FolioPageFragment.newInstance(position,
-                    mEpubFileName, mSpineReferences.get(position), mBookId);
+                    mEpubFileName, spineRef, mBookId, chapterTitle);
             fragments.set(position, fragment);
         }
         return fragment;

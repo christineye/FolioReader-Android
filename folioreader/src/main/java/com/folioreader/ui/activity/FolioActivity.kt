@@ -507,6 +507,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
 
         val publication = pubBox!!.publication
         spine = publication.readingOrder
+
         title = publication.metadata.title
 
         if (mBookId == null) {
@@ -555,7 +556,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         mFolioPageViewPager!!.setDirection(newDirection)
         mFolioPageFragmentAdapter = FolioPageFragmentAdapter(
             supportFragmentManager,
-            spine, bookFileName, mBookId
+            spine, bookFileName, mBookId, pubBox!!.publication.tableOfContents
         )
         mFolioPageViewPager!!.adapter = mFolioPageFragmentAdapter
         mFolioPageViewPager!!.currentItem = currentChapterIndex
@@ -899,7 +900,7 @@ class FolioActivity : AppCompatActivity(), FolioActivityCallback, MediaControlle
         mFolioPageViewPager!!.setDirection(direction)
         mFolioPageFragmentAdapter = FolioPageFragmentAdapter(
             supportFragmentManager,
-            spine, bookFileName, mBookId
+            spine, bookFileName, mBookId, pubBox!!.publication.tableOfContents
         )
         mFolioPageViewPager!!.adapter = mFolioPageFragmentAdapter
 
