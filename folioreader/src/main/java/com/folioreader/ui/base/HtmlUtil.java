@@ -9,10 +9,11 @@ import com.folioreader.R;
 import com.folioreader.model.dictionary.U8Parser;
 import com.folioreader.model.sqlite.AnnotationDictionaryTable;
 
+import org.joda.time.DateTime;
+
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author gautam chibde on 14/6/17.
@@ -20,7 +21,8 @@ import java.util.regex.Pattern;
 
 public final class HtmlUtil {
 
-    private static int MaxPhraseSearchSize = 6;
+    private static int MaxPhraseInlineSearchSize = 2;
+    private static int MaxPhraseDictionarySearchSize = 6;
     private static int CharactersToCheckBeforeTurningOnAnnotation = 200;
 
     /**
@@ -146,18 +148,32 @@ public final class HtmlUtil {
                         + ".w { display: inline-block !important; margin-left: 5px; margin-right: 0px; vertical-align: top; text-align: center; }"
                                 + ".d { display: block; text-indent: 0px !important; font-size: 10px !important; max-width: 80px; overflow-wrap: break-word !important; word-wrap: break-word !important; word-break: break-all !important; overflow: hidden; text-overflow: ellipsis; max-height: 26px; }"
                                 + ".d.dl {max-width: 120px !important;max-height: 26px; font-size: 10px !important;  }"
-                                + ".t1 { margin-top: -10px; font-weight: bold; font-size: 30px !important; color: rgba(252,199,189,1) !important; } .t2 {font-weight: bold; font-size: 30px !important; color:#93843e !important; } .t3 {font-weight: bold; font-size: 40px !important; color:#377221 !important;} .t4 {font-weight: bold; font-size: 30px !important; color:#3b918d !important;} "
+                                + ".d.ds {max-width: 100% !important;max-height: 26px; font-size: 10px !important;  }"
+                                + "div.t1 { margin-top: -10px; font-weight: bold; font-size: 30px !important; color: rgba(252,199,189,1) !important; } div.t2 {font-weight: bold; font-size: 30px !important; color:#93843e !important; } div.t3 {font-weight: bold; font-size: 40px !important; color:#377221 !important;} div.t4 {font-weight: bold; font-size: 30px !important; color:#3b918d !important;} "
             + " </style></head>");
 
                 StringBuilder annotatedBody = new StringBuilder();
 
+                int bodyLen = body.length();
+
+                StringBuilder extendedSubForDictionaryLookupBuilder = new StringBuilder();
+
+                long startTime = DateTime.now().getMillis();
+                long defsTime = 0;
+
                 boolean insideAngleBrackets = false;
-                for (int i = 0; i < body.length(); i++) {
+                for (int i = 0; i < bodyLen; i++) {
                     int cur = body.codePointAt(i);
+
+                    if (extendedSubForDictionaryLookupBuilder.length() > 0)
+                    {
+                        extendedSubForDictionaryLookupBuilder.deleteCharAt(0);
+                    }
 
                     if (cur == (int) '<') {
                         insideAngleBrackets = true;
                         annotatedBody.appendCodePoint(cur);
+                        extendedSubForDictionaryLookupBuilder.setLength(0);
                         continue;
                     } else if (cur == (int) '>') {
                         insideAngleBrackets = false;
@@ -172,23 +188,46 @@ public final class HtmlUtil {
                                     U8Parser.Init(context);
                                 }
 
-                                defs = dictionaryTable.GetAllWords();
+                                DateTime temp = DateTime.now();
+                                defs = dictionaryTable.GetAllWords(MaxPhraseInlineSearchSize);
+
+                                defsTime = DateTime.now().getMillis() - temp.getMillis();
                             }
 
                             boolean found = false;
-                            for (int j = MaxPhraseSearchSize; j >= 1; j--) {
-                                String sub = body.substring(i, i + j);
+
+                            for (int k = extendedSubForDictionaryLookupBuilder.length(); k < MaxPhraseDictionarySearchSize - 1 && k < bodyLen; k++)
+                            {
+                                int thisChar = body.codePointAt(i + k);
+                                if (Character.UnicodeScript.of(thisChar) != Character.UnicodeScript.HAN)
+                                {
+                                    break;
+                                }
+
+                                extendedSubForDictionaryLookupBuilder.appendCodePoint(thisChar);
+                            }
+
+                            String extendedSubForDictionaryLookup = extendedSubForDictionaryLookupBuilder.toString();
+
+                            for (int j = MaxPhraseInlineSearchSize; j >= 1; j--) {
+                                String sub = body.substring(i, Math.min(i + j, bodyLen));
+
                                 if (defs.containsKey(sub)) {
                                     AnnotationDictionaryTable.AnnotationDefinition mainDef = defs.get(sub).get(0);
 
                                     if (mainDef.Learned == 0) {
                                         String longClass = "";
-                                        if (j >= 4)
+
+                                        if (j >4)
+                                        {
+                                            longClass = "ds";
+                                        }
+                                        else if (j == 4)
                                         {
                                             longClass = "dl";
                                         }
 
-                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\")'>" + sub
+                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\", \"" + extendedSubForDictionaryLookup + "\")'>" + sub
                                                 + "<div class='d " + longClass + "'>[" + mainDef.Romanization + "] "
                                                 + Html.escapeHtml(mainDef.Definition.replace("/", "/ "))
                                                 + "</div></div>");
@@ -223,7 +262,7 @@ public final class HtmlUtil {
                                             toneClass = "t4";
                                         }
 
-                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\")'>" + sub
+                                        annotatedBody.append("<div class='w " + mainDef.WordId + "' onclick='onClickWord(\"" + sub + "\", \"" + extendedSubForDictionaryLookup + "\")'>" + sub
                                                 + "<div class='d " + toneClass + "'>" + toneSymbol
                                                 + "</div></div>");
 
@@ -233,6 +272,14 @@ public final class HtmlUtil {
 
                                     // -1 because the loop already does ++
                                     i += (j - 1);
+
+                                    for (int k = 0; k < j - 1; k++)
+                                    {
+                                        if (extendedSubForDictionaryLookupBuilder.length() > 0)
+                                        {
+                                            extendedSubForDictionaryLookupBuilder.deleteCharAt(0);
+                                        }
+                                    }
                                     break;
                                 }
                             }
@@ -247,6 +294,8 @@ public final class HtmlUtil {
                     }
 
                 }
+
+                long totalTime = DateTime.now().getMillis() - startTime;
 
                 return head + "<body" + annotatedBody.toString();
             }

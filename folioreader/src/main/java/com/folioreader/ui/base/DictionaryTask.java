@@ -37,13 +37,12 @@ public class DictionaryTask extends AsyncTask<String, Void, List<AnnotationDicti
 
     @Override
     protected List<AnnotationDictionaryTable.AnnotationDefinition> doInBackground(String... strings) {
-        String strUrl = strings[0];
         try {
 
 
             AnnotationDictionaryTable table = new AnnotationDictionaryTable(context.get());
 
-            return table.getDefinitionsForWordAndSubWords(strings[0]);
+            return table.getDefinitionsForWordAndSubWords(strings[0], strings[1]);
 
 
         } catch (Exception e) {

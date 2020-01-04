@@ -7,12 +7,13 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class AppMetadataTable {
 
-    public static final String TABLE_NAME = "app_metadata";
-
-    public static final String KEY = "keyname";
-    public static final String VALUE = "value";
-
+    // public keys
     public static final String LAST_EBOOK = "lastebook";
+
+    // internal keys
+    private static final String TABLE_NAME = "app_metadata";
+    private static final String KEY = "keyname";
+    private static final String VALUE = "value";
 
     private SQLiteDatabase database;
 

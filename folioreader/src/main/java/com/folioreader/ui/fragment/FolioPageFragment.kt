@@ -374,7 +374,7 @@ class FolioPageFragment : Fragment(),
         }
 
         mWebview!!.settings.javaScriptEnabled = true
-        mWebview!!.isVerticalScrollBarEnabled = true
+        mWebview!!.isVerticalScrollBarEnabled = false
         mWebview!!.settings.allowFileAccess = true
 
         mWebview!!.isHorizontalScrollBarEnabled = false

@@ -49,8 +49,36 @@ public class AnnotatedDictionaryAdapter extends RecyclerView.Adapter<AnnotatedDi
     public void onBindViewHolder(DictionaryHolder holder, int position) {
         final AnnotationDictionaryTable.AnnotationDefinition res = results.get(position);
 
+        if (res.Word.equalsIgnoreCase(word) && res.IsDefault)
+        {
+            holder.name.setTextSize(20);
+            holder.pinyin.setTextSize(20);
+            holder.definition.setTextSize(20);
+
+            if (config.isNightMode()) {
+                holder.rootView.setBackgroundColor(Color.rgb(36, 116, 153));
+            }
+            else
+            {
+                holder.rootView.setBackgroundColor(Color.rgb(98, 188, 229));
+            }
+        }
+        else if (!word.contains(res.Word))
+        {
+            if (config.isNightMode())
+            {
+                holder.rootView.setBackgroundColor(Color.rgb(49, 89, 55));
+            }
+            else
+            {
+                holder.rootView.setBackgroundColor(Color.rgb(98, 229, 118));
+            }
+        }
+
         holder.name.setTypeface(Typeface.DEFAULT_BOLD);
-        holder.name.setText(res.Romanization);
+        holder.name.setText(res.Word);
+
+        holder.pinyin.setText(res.Romanization);
 
         holder.definition.setText(res.Definition);
 
@@ -93,25 +121,28 @@ public class AnnotatedDictionaryAdapter extends RecyclerView.Adapter<AnnotatedDi
     }
 
     public static class DictionaryHolder extends RecyclerView.ViewHolder {
-        private TextView name, definition;
+        private TextView name, definition, pinyin;
         private RadioButton radioButton;
+        private View rootView;
         //TODO private ImageButton sound;
 
         public DictionaryHolder(View itemView) {
             super(itemView);
 
-            name = (TextView) itemView.findViewById(R.id.pinyin);
+            name = (TextView) itemView.findViewById(R.id.definition_word);
+            pinyin = (TextView) itemView.findViewById(R.id.pinyin);
             radioButton = (RadioButton) itemView.findViewById(R.id.radioButton);
             definition = (TextView) itemView.findViewById(R.id.definition);
 
 
-            View rootView = itemView.findViewById(R.id.root_view);
+            rootView = itemView.findViewById(R.id.root_view);
 
             if (config.isNightMode()) {
                 rootView.setBackgroundColor(Color.BLACK);
                 int nightTextColor = ContextCompat.getColor(itemView.getContext(),
                         R.color.night_text_color);
                 name.setTextColor(nightTextColor);
+                pinyin.setTextColor(nightTextColor);
                 definition.setTextColor(nightTextColor);
             } else {
                 rootView.setBackgroundColor(Color.WHITE);

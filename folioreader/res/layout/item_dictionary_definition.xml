@@ -14,8 +14,18 @@
             android:id="@+id/radioButton"
             android:layout_width="0dp"
             android:layout_height="30dp"
+            android:textColor="@drawable/compound_button_color_selector"
+            android:buttonTint="@drawable/compound_button_color_selector"
             android:layout_weight="1" />
 
+        <TextView
+            android:id="@+id/definition_word"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="3"
+            android:text="TextView"
+            android:textAlignment="viewStart" />
 
         <TextView
             android:id="@+id/pinyin"

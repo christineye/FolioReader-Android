@@ -873,7 +873,7 @@ function updateAnnotation(wordId, isLearned, definition, romanization, word)
         {
             var tone = getTone(romanization)
             $("." + wordId + " .d").text(tone[0])
-            $("." + wordId + " .d").removeClass("t1").removeClass("t2").removeClass("t3").removeClass("t4").addClass(tone[1])
+            $("." + wordId + " .d").removeClass("t1 t2 t3 t4").addClass(tone[1])
         }
         else
         {
@@ -895,14 +895,14 @@ function updateAnnotation(wordId, isLearned, definition, romanization, word)
     else
     {
         $("." + wordId + " .d").show();
-        $("." + wordId + " .d").text("[" + romanization + "] " + definition);
+        $("." + wordId + " .d").removeClass("t1 t2 t3 t4").text("[" + romanization + "] " + definition);
     }
 }
 
-function onClickWord(word)
+function onClickWord(word, extended)
 {
     console.debug("-> onClickWord: " + word);
-    FolioWebView.onWordClicked(word);
+    FolioWebView.onWordClicked(word, extended);
 }
 
 function onClickHtml() {

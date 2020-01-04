@@ -78,6 +78,16 @@ public class U8Parser {
                     isDefault = -1;
                 }
 
+                if (definition.contains("|" + simplified + "[") && (definition.contains("variant of ")))
+                {
+                    continue;
+                }
+
+                if (definition.startsWith("erhua variant"))
+                {
+                    continue;
+                }
+
                 databaseHelper.insertWord(simplified, definition, pinyin, isDefault);
 
                 if (i % 10 == 0)

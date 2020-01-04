@@ -7,10 +7,10 @@ import android.database.sqlite.SQLiteDatabase;
 
 public class ReadLocatorTable {
 
-    public static final String TABLE_NAME = "read_locators";
+    private static final String TABLE_NAME = "read_locators";
 
-    public static final String EPUB = "epub";
-    public static final String READLOCATOR = "readlocator";
+    private static final String EPUB = "epub";
+    private static final String READLOCATOR = "readlocator";
 
     private SQLiteDatabase database;
 

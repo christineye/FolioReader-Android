@@ -35,6 +35,7 @@ import com.folioreader.ui.base.WikipediaCallBack;
 import com.folioreader.ui.base.WikipediaTask;
 import com.folioreader.util.AppUtil;
 import com.folioreader.util.UiUtil;
+import com.mcxiaoke.koi.Const;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +52,7 @@ public class DictionaryFragment extends DialogFragment
     private static final String TAG = "DictionaryFragment";
 
     private String word;
+    private String wordContext;
 
     private MediaPlayer mediaPlayer;
     private RecyclerView dictResults;
@@ -72,6 +74,7 @@ public class DictionaryFragment extends DialogFragment
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NO_TITLE, 0);
         word = getArguments().getString(Constants.SELECTED_WORD);
+        wordContext = getArguments().getString(Constants.CONTEXT);
         mediaPlayer = new MediaPlayer();
     }
 
@@ -168,7 +171,7 @@ public class DictionaryFragment extends DialogFragment
 
         UiUtil.setColorIntToDrawable(themeColor, imageViewClose.getDrawable());
         LinearLayout layoutHeader = view.findViewById(R.id.layout_header);
-        layoutHeader.setBackgroundDrawable(UiUtil.getShapeDrawable(themeColor));
+       // layoutHeader.setBackgroundDrawable(UiUtil.getShapeDrawable(themeColor));
         UiUtil.setColorIntToDrawable(themeColor, progressBar.getIndeterminateDrawable());
         UiUtil.setShapeColor(googleSearch, themeColor);
 
@@ -186,7 +189,6 @@ public class DictionaryFragment extends DialogFragment
             def.setBackgroundColor(Color.BLACK);
             noNetwork.setTextColor(nightTextColor);
             isLearnedText.setTextColor(nightTextColor);
-            isLearnedCheckbox.setBackgroundColor(Color.WHITE);
 
         } else {
             view.findViewById(R.id.contentView).setBackgroundColor(Color.WHITE);
@@ -213,7 +215,7 @@ public class DictionaryFragment extends DialogFragment
         wikiLayout.setVisibility(View.GONE);
         dictResults.setVisibility(View.VISIBLE);
         DictionaryTask task = new DictionaryTask(this, getContext());
-        task.execute(word);
+        task.execute(word, wordContext);
     }
 
     private void loadWikipedia() {

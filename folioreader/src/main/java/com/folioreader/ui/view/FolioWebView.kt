@@ -314,13 +314,14 @@ class FolioWebView : WebView, AnnotationChangeListener {
     }
 
     @JavascriptInterface
-    fun onWordClicked(word : String)
+    fun onWordClicked(word : String, context : String)
     {
         Log.v(LOG_TAG, "clicked " + word);
 
         val dictionaryFragment = DictionaryFragment()
         val bundle = Bundle()
         bundle.putString(Constants.SELECTED_WORD, word)
+        bundle.putString(Constants.CONTEXT, context)
         dictionaryFragment.arguments = bundle
         dictionaryFragment.show(parentFragment.fragmentManager, DictionaryFragment::class.java.name)
     }
